@@ -17,12 +17,13 @@
   --accent-ink:#171a10;
   --radius:16px;
 }
+html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
 *{ box-sizing:border-box; }
 body{
   margin:0;
   background:var(--bg);
   color:var(--text);
-  font:14px/1.45 "DM Sans","Nanum Gothic",sans-serif;
+  font:14px/1.45 "Nunito Sans","Nanum Gothic",sans-serif;
   transition:background .2s,color .2s;
 }
 body.light{
@@ -380,7 +381,7 @@ input[type=range]{
   overflow:hidden;
   z-index:1;
   gap:2.4%;
-  font-family:Arial,"Noto Sans KR",sans-serif;
+  font-family:"Noto Sans KR",Arial,sans-serif;
 }
 .preview-text{
   overflow-wrap:anywhere;
@@ -448,11 +449,15 @@ input[type=range]{
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Chiron+GoRound+TC:wght@200..900&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@200..900&display=swap" rel="stylesheet">
-<link href="https://hangeul.pstatic.net/hangeul_static/css/nanum-myeongjo.css" rel="stylesheet">
+<!-- Load every selectable web font explicitly; display=swap avoids invisible text while fonts load. -->
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@300;400;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:opsz,wght@6..12,200..1000&display=swap" rel="stylesheet">
 
 </head>
 <body>
@@ -777,10 +782,10 @@ input[type=range]{
     times:'"Times New Roman", serif',
     arial:'Arial, sans-serif',
     figtree:'"Figtree", "Noto Sans KR", sans-serif',
-    gothic:'"Chiron GoRound TC", "Malgun Gothic", sans-serif',
-    myeongjo:'"Noto Serif KR", "Batang", serif',
-    noto:'"Noto Sans KR", "Malgun Gothic", sans-serif',
-    nanum:'"NanumMyeongjo", "Batang", serif'
+    gothic:'"Gothic A1", "Noto Sans KR", sans-serif',
+    myeongjo:'"Noto Serif KR", "Nanum Myeongjo", "Batang", serif',
+    noto:'"Noto Sans KR", "Nanum Gothic", sans-serif',
+    nanum:'"Nanum Myeongjo", "Noto Serif KR", "Batang", serif'
   };
   const defaults = {
     quoteInput:'“A sentence can hold an entire world.”',quoteFont:'serif',quoteWeight:'400',quoteSize:'22',quoteColor:'#ffffff',
@@ -801,6 +806,13 @@ input[type=range]{
     text.addEventListener('change',()=>sync(text.value,true));
   }
   ['quoteColor','titleColor','detailsColor','publisherColor'].forEach(applyColor);
+  // The original 1188px export was rendered from a 594px CSS square at 2x.
+  // Keep that as the design reference and scale all preview typography with the square.
+  const DESIGN_WIDTH = 594;
+  function scaledFontSize(value){
+    const width = preview.getBoundingClientRect().width || DESIGN_WIDTH;
+    return (Number(value) * width / DESIGN_WIDTH) + 'px';
+  }
   function render(){
     $('text1Preview').textContent=$('quoteInput').value;
     $('text2Preview').textContent=$('titleInput').value;
@@ -810,15 +822,17 @@ input[type=range]{
     $('text4Preview').textContent=$('publisherInput').value;
     const quote=$('text1Preview'),title=$('text2Preview'),details=$('text3Preview'),publisher=$('text4Preview');
     applyFont(quote,'quoteFont');applyFont(title,'titleFont');applyFont(details,'detailsFont');applyFont(publisher,'publisherFont');
-    quote.style.fontSize=$('quoteSize').value+'px';quote.style.fontWeight=$('quoteWeight').value;quote.style.color=$('quoteColor').value;
-    title.style.fontSize=$('titleSize').value+'px';title.style.fontWeight=$('titleWeight').value;title.style.color=$('titleColor').value;
-    details.style.fontSize=$('detailsSize').value+'px';details.style.fontWeight=$('detailsWeight').value;details.style.color=$('detailsColor').value;
-    publisher.style.fontSize=$('publisherSize').value+'px';publisher.style.color=$('publisherColor').value;
+    quote.style.fontSize=scaledFontSize($('quoteSize').value);quote.style.fontWeight=$('quoteWeight').value;quote.style.color=$('quoteColor').value;
+    title.style.fontSize=scaledFontSize($('titleSize').value);title.style.fontWeight=$('titleWeight').value;title.style.color=$('titleColor').value;
+    details.style.fontSize=scaledFontSize($('detailsSize').value);details.style.fontWeight=$('detailsWeight').value;details.style.color=$('detailsColor').value;
+    publisher.style.fontSize=scaledFontSize($('publisherSize').value);publisher.style.color=$('publisherColor').value;
     publisher.style.display=$('publisherToggle').checked?'block':'none';
     $('darkOverlay').style.opacity=$('dimToggle').checked?(Number($('dimRange').value)/100):0;
     $('dimValue').textContent=$('dimRange').value+'%';
     ['quoteSize','titleSize','detailsSize','publisherSize'].forEach(id=>$(id+'Value').textContent=$(id).value+' px');
   }
+  window.addEventListener('resize', render);
+  if ('ResizeObserver' in window) new ResizeObserver(render).observe(preview);
   fields.forEach(id=>{
     const el=$(id); if(!el)return;
     el.addEventListener('input',render);el.addEventListener('change',render);
@@ -856,15 +870,111 @@ input[type=range]{
     preview.style.backgroundImage=document.querySelector('.swatch').dataset.bg;
     render();
   });
-  $('saveButton').addEventListener('click',async()=>{
-    const button=$('saveButton'),old=button.textContent;button.disabled=true;button.textContent='Preparing…';
-    try{
-      if(!window.html2canvas)throw new Error('The image export library could not load. Check your internet connection and try again.');
-      const canvas=await html2canvas(preview,{backgroundColor:null,scale:2,useCORS:true,allowTaint:false,logging:false});
-      const link=document.createElement('a');link.download='quote-card.png';link.href=canvas.toDataURL('image/png');link.click();
-      button.textContent='Saved ✓';
-    }catch(error){alert('Could not export the image. '+error.message);button.textContent=old}
-    finally{setTimeout(()=>{button.disabled=false;button.textContent=old},1300)}
+  $('saveButton').addEventListener('click', async () => {
+    const button = $('saveButton');
+    const old = button.textContent;
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    // Open synchronously on tap so Safari is less likely to block the fallback tab.
+    const exportTab = isIOS ? window.open('about:blank', '_blank') : null;
+    button.disabled = true;
+    button.textContent = 'Preparing…';
+    try {
+      if (!window.html2canvas) throw new Error('The image export library could not load. Check your internet connection and try again.');
+      if (document.fonts) {
+        // Safari can report fonts.ready before a not-yet-used family has actually
+        // been fetched. Explicitly request the fonts currently used by the card.
+        const fontLoads = [ $('text1Preview'), $('text2Preview'), $('text3Preview'), $('text4Preview') ]
+          .map(el => {
+            const style = getComputedStyle(el);
+            return document.fonts.load(
+              `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`,
+              el.textContent || 'Quote'
+            );
+          });
+        await Promise.all(fontLoads);
+        await document.fonts.ready;
+      }
+      const width = preview.getBoundingClientRect().width;
+      const canvas = await html2canvas(preview, {
+        backgroundColor: null,
+        scale: 1188 / width,
+        width: Math.round(width),
+        height: Math.round(width),
+        useCORS: true,
+        allowTaint: false,
+        logging: false
+      });
+      const blob = await new Promise((resolve, reject) => {
+        if (!canvas.toBlob) return reject(new Error('This browser cannot create a PNG blob.'));
+        canvas.toBlob(result => result ? resolve(result) : reject(new Error('Could not create the PNG image.')), 'image/png');
+      });
+      const file = new File([blob], 'quote-card.png', { type: 'image/png' });
+      const showIOSImageFallback = (imageUrl) => {
+        const helpPage = '<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Save quote card</title></head>' +
+          '<body style="margin:0;padding:18px;background:#222;color:#fff;font:16px -apple-system,BlinkMacSystemFont,sans-serif;text-align:center">' +
+          '<p style="line-height:1.5">Your quote card is ready. Touch and hold the image, then choose <b>Save to Photos</b> or <b>Save Image</b>.</p>' +
+          '<img id="quoteImage" alt="Generated quote card" style="display:block;width:100%;height:auto;margin:16px auto 0;-webkit-touch-callout:default;user-select:auto">' +
+          '</body></html>';
+        if (exportTab && !exportTab.closed) {
+          exportTab.document.open();
+          exportTab.document.write(helpPage);
+          exportTab.document.close();
+          exportTab.document.getElementById('quoteImage').src = imageUrl;
+          exportTab.focus();
+        } else {
+          // If Safari blocked the temporary tab, show the image in the current page
+          // instead of attempting another popup after the async export has finished.
+          let panel = document.getElementById('iosExportFallback');
+          if (!panel) {
+            panel = document.createElement('div');
+            panel.id = 'iosExportFallback';
+            panel.style.cssText = 'position:fixed;inset:0;z-index:99999;overflow:auto;background:#222;color:#fff;padding:18px;font:16px -apple-system,BlinkMacSystemFont,sans-serif;text-align:center';
+            panel.innerHTML = '<button type="button" id="closeIOSExport" style="position:sticky;top:0;float:right;padding:10px 14px;border:1px solid #777;border-radius:9px;background:#333;color:#fff">Close</button><p style="clear:both;line-height:1.5">Your quote card is ready. Touch and hold the image, then choose <b>Save to Photos</b> or <b>Save Image</b>.</p><img id="iosFallbackImage" alt="Generated quote card" style="display:block;width:100%;height:auto;margin:16px auto 0;-webkit-touch-callout:default;user-select:auto">';
+            document.body.appendChild(panel);
+            panel.querySelector('#closeIOSExport').addEventListener('click', () => panel.remove());
+          }
+          panel.querySelector('#iosFallbackImage').src = imageUrl;
+          if (exportTab && !exportTab.closed) exportTab.close();
+        }
+      };
+      if (isIOS && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file], title: 'Quote card' });
+          if (exportTab && !exportTab.closed) exportTab.close();
+          button.textContent = 'Share sheet opened';
+        } catch (shareError) {
+          if (shareError.name === 'AbortError') {
+            if (exportTab && !exportTab.closed) exportTab.close();
+            button.textContent = old;
+            return;
+          }
+          const url = URL.createObjectURL(blob);
+          showIOSImageFallback(url);
+          button.textContent = 'Image ready';
+        }
+      } else if (isIOS) {
+        const url = URL.createObjectURL(blob);
+        showIOSImageFallback(url);
+        button.textContent = 'Image ready';
+      } else {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'quote-card.png';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+        button.textContent = 'Saved ✓';
+      }
+    } catch (error) {
+      if (exportTab && !exportTab.closed && exportTab.location.href === 'about:blank') exportTab.close();
+      alert('Could not export the image. ' + error.message);
+      button.textContent = old;
+    } finally {
+      setTimeout(() => { button.disabled = false; button.textContent = old; }, 1600);
+    }
   });
   render();
 })();
