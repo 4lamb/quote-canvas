@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quote Canvas — Quote Card Maker</title>
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#111214;
+  --panel:#181a1e;
+  --panel2:#202329;
+  --line:#34373e;
+  --text:#f5f5f6;
+  --muted:#a7aab2;
+  --accent:#d7ff72;
+  --accent-ink:#171a10;
+  --radius:16px;
+}
+*{ box-sizing:border-box; }
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font:14px/1.45 "DM Sans","Nanum Gothic",sans-serif;
+  transition:background .2s,color .2s;
+}
+body.light{
+  color-scheme:light;
+  --bg:#f2f3f5;
+  --panel:#fff;
+  --panel2:#f5f6f8;
+  --line:#d8dbe1;
+  --text:#202126;
+  --muted:#686c76;
+  --accent:#5d7420;
+  --accent-ink:#fff;
+}
+button,input,select,textarea{ font:inherit; }
+button{ cursor:pointer; }
+.app{
+  min-height:100vh;
+  display:grid;
+  grid-template-columns:360px minmax(0,1fr);
+}
+.sidebar{
+  background:var(--panel);
+  border-right:1px solid var(--line);
+  padding:22px 20px;
+  overflow:auto;
+  max-height:100vh;
+}
+.brand{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:22px;
+}
+.brand h1{
+  font-size:17px;
+  letter-spacing:-.04em;
+  margin:0;
+  font-weight:750;
+}
+.brand small{
+  display:block;
+  color:var(--muted);
+  font-size:11px;
+  font-weight:450;
+  letter-spacing:0;
+  margin-top:2px;
+}
+.brander{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.brand-left{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.brand-mark{
+  width:30px;
+  height:30px;
+  border-radius:10px;
+  background:var(--accent);
+  color:#111;
+  display:grid;
+  place-items:center;
+  font-size:19px;
+  font-weight:700;
+}
+.brand-name{
+  font-size:15px;
+  letter-spacing:-.4px;
+  font-weight:700;
+}
+.brand-name span{
+  color:var(--muted);
+  font-weight:400;
+}
+.icon-button{
+  border:1px solid var(--line);
+  background:var(--panel2);
+  color:var(--text);
+  border-radius:10px;
+  padding:8px 10px;
+}
+.section{
+  border-top:1px solid var(--line);
+  padding-top:16px;
+  margin-top:17px;
+}
+.section-title{
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.12em;
+  color:var(--muted);
+  margin:0 0 12px;
+}
+.field{ margin-bottom:13px; }
+.field label,.field-label{
+  display:block;
+  color:var(--muted);
+  font-size:12px;
+  margin-bottom:6px;
+}
+input[type=text],textarea,select{
+  width:100%;
+  background:var(--panel2);
+  border:1px solid var(--line);
+  color:var(--text);
+  border-radius:10px;
+  padding:10px 11px;
+  outline:none;
+}
+textarea{
+  min-height:108px;
+  resize:vertical;
+}
+input:focus,textarea:focus,select:focus{ border-color:var(--accent); }
+.row{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.row>*{ min-width:0; }
+.row .field{ flex:1; }
+.two-col{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.palette{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.swatch{
+  width:34px;
+  height:34px;
+  border-radius:10px;
+  border:2px solid #ffffff50;
+  box-shadow:inset 0 0 0 1px #0002;
+}
+.swatch.active{
+  outline:2px solid var(--accent);
+  outline-offset:3px;
+}
+.upload{
+  display:block;
+  border:1px dashed var(--line);
+  border-radius:10px;
+  padding:10px;
+  text-align:center;
+  color:var(--muted);
+  cursor:pointer;
+}
+.upload input{ display:none; }
+.color-row{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+input[type=color]{
+  width:40px;
+  height:36px;
+  border:1px solid var(--line);
+  background:var(--panel2);
+  border-radius:9px;
+  padding:3px;
+}
+input[type=range]{
+  width:100%;
+  accent-color:var(--accent);
+}
+.range-line{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+.range-line output{
+  font-size:12px;
+  color:var(--muted);
+  font-variant-numeric:tabular-nums;
+}
+.segment{
+  display:flex;
+  gap:4px;
+  background:var(--panel2);
+  border:1px solid var(--line);
+  padding:4px;
+  border-radius:11px;
+}
+.segment button{
+  flex:1;
+  background:transparent;
+  color:var(--muted);
+  border:0;
+  border-radius:7px;
+  padding:7px 5px;
+  font-size:12px;
+}
+.segment button svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+.segment button.active{
+  background:var(--accent);
+  color:var(--accent-ink);
+  font-weight:750;
+}
+.checkline{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin:10px 0;
+  color:var(--text);
+}
+.switch{
+  position:relative;
+  width:40px;
+  height:23px;
+  flex:none;
+}
+.switch input{
+  opacity:0;
+  width:0;
+  height:0;
+}
+.switch span{
+  position:absolute;
+  inset:0;
+  border-radius:30px;
+  background:#555;
+  transition:.2s;
+}
+.switch span:before{
+  content:"";
+  position:absolute;
+  width:17px;
+  height:17px;
+  left:3px;
+  top:3px;
+  border-radius:50%;
+  background:white;
+  transition:.2s;
+}
+.switch input:checked+span{
+  background:var(--accent);
+}
+.switch input:checked+span:before{
+  transform:translateX(17px);
+  background:var(--accent-ink);
+}
+.actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:9px;
+  margin-top:20px;
+}
+.primary,.secondary{
+  padding:13px 12px;
+  border-radius:999px;
+  font-weight:750;
+}
+.primary{
+  border:1px solid var(--accent);
+  background:var(--accent);
+  color:var(--accent-ink);
+}
+.secondary{
+  border:1px solid var(--line);
+  background:transparent;
+  color:var(--text);
+}
+.workspace{
+  display:flex;
+  flex-direction: column;
+  align-items:center;
+  justify-content:center;
+  padding:42px;
+  min-width:0;
+  position:relative;
+  background:var(--bg);
+}
+.eyebrow{
+  font-size:10px;
+  letter-spacing:1.7px;
+  text-transform:uppercase;
+  color:var(--muted);font-weight:700;
+}
+.preview-caption{
+  margin-top:18px;
+  font-size:10px;
+  letter-spacing:1.4px;
+  color:#64666d;
+  text-transform:uppercase;
+}
+.stage-top{
+  position:absolute;
+  top:25px;
+  left:30px;
+  right:30px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  color:#777a81;
+  font-size:11px;
+}
+.stage-status{
+  display:flex;
+  gap:7px;
+  align-items:center;
+}
+.status-dot{
+  width:6px;
+  height:6px;
+  background:var(--accent);
+  border-radius:50%;
+}
+.preview-wrap{
+  width:min(100%, min(76vh, 820px));
+}
+.quote-preview{
+  position:relative;
+  width:100%;
+  aspect-ratio:1/1;
+  overflow:hidden;
+  isolation:isolate;
+  background-image:linear-gradient(115deg,#ff2d38 0%,#ff5277 45%,#ffbecb 100%);
+  background-size:cover;
+  background-position:center;
+  box-shadow:0 18px 60px #0002;
+}
+.dark-overlay{
+  position:absolute;
+  inset:0;background:#000;
+  opacity:0;
+  pointer-events:none;
+  z-index:0;
+}
+.main-copy{
+  position:absolute;
+  left:9.5%;
+  right:9.5%;
+  top:20%;
+  bottom:17%;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  overflow:hidden;
+  z-index:1;
+  gap:2.4%;
+  font-family:Arial,"Noto Sans KR",sans-serif;
+}
+.preview-text{
+  overflow-wrap:anywhere;
+  white-space:pre-wrap;
+}
+.text1{
+  line-height:1.48;
+  max-height:68%;
+  overflow:hidden;
+}
+.text2{
+  line-height:1.4;
+  margin-top:1.4%;
+  font-weight:500;
+}
+.text3{
+  line-height:1.45;
+  margin-top:.6%;
+  font-weight:300;
+  opacity:.8;
+}
+.text4{
+  position:absolute;
+  left:7%;
+  right:7%;
+  bottom:3.6%;
+  text-align:center;
+  line-height:1.2;
+  font-size:11px;
+  font-weight:500;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  z-index:1;
+  opacity:.8;
+}
+@media(max-width:800px){
+  .app{
+    display:flex;
+    flex-direction:column;
+  }
+  .workspace{
+    order:0;
+    padding:58px 18px 22px;
+    min-height:auto;}
+  .preview-wrap{ width:min(100%, 560px); }
+  .sidebar{
+    order:1;
+    max-height:none;
+    overflow:visible;
+    border-right:0;
+    border-top:1px solid var(--line);
+    padding:22px 18px 30px;
+  }
+  .brand{ margin-bottom:14px; }
+  .section{
+    margin-top:14px;
+    padding-top:14px;
+  }
+}
+@media(min-width:801px) and (max-height:760px){
+  .workspace{ padding:30px; }
+  .preview-wrap{ width:min(100%,calc(100vh - 110px)); }
+}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Chiron+GoRound+TC:wght@200..900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@200..900&display=swap" rel="stylesheet">
+<link href="https://hangeul.pstatic.net/hangeul_static/css/nanum-myeongjo.css" rel="stylesheet">
+
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <header class="brander">
+        <div class="brand-left"><div class="brand-mark">“</div><div class="brand-name">quote canvas <span> / studio</span></div></div>
+      </header>
+      <button id="themeToggle" class="icon-button" type="button" aria-label="Toggle light and dark mode">☼</button>
+    </div>
+    <div class="section" style="border-top:0;padding-top:0;margin-top:0">
+      <h2 class="section-title">BACKGROUND</h2>
+      <div id="palette" class="palette">
+        <button class="swatch active" data-bg="linear-gradient(115deg,#ff2d38 0%,#ff5277 45%,#ffbecb 100%)" style="background:linear-gradient(115deg,#ff2d38 0%,#ff5277 45%,#ffbecb 100%)" aria-label="Pink gradient"></button>
+        <button class="swatch" data-bg="linear-gradient(135deg,#ff2340 0%,#ffb6c5 100%)" style="background:linear-gradient(135deg,#ff2340,#ffb6c5)" aria-label="Rose gradient"></button>
+        <button class="swatch" data-bg="linear-gradient(135deg,#173c35,#7bbf9b)" style="background:linear-gradient(135deg,#173c35,#7bbf9b)" aria-label="Green gradient"></button>
+        <button class="swatch" data-bg="linear-gradient(135deg,#176e9a,#8be0e8)" style="background:linear-gradient(135deg,#176e9a,#8be0e8)" aria-label="Blue gradient"></button>
+        <button class="swatch" data-bg="linear-gradient(135deg,#332a79,#a49af4)" style="background:linear-gradient(135deg,#332a79,#a49af4)" aria-label="Violet gradient"></button>
+        <button class="swatch" data-bg="linear-gradient(135deg,#b56a28,#f2c879)" style="background:linear-gradient(135deg,#b56a28,#f2c879)" aria-label="Gold gradient"></button>
+        <button class="swatch" data-bg="linear-gradient(135deg,#111827,#6b7280)" style="background:linear-gradient(135deg,#111827,#6b7280)" aria-label="Slate gradient"></button>
+      </div>
+      <div style="margin-top:12px">
+        <label class="upload">＋ Upload a custom photo<input id="backgroundUpload" type="file" accept="image/*"></label>
+      </div>
+      <div class="checkline">
+        <span>Dim background</span>
+        <label class="switch">
+          <input id="dimToggle" type="checkbox">
+          <span>
+          </span>
+        </label>
+      </div>
+      <div class="field">
+        <div class="range-line">
+          <label for="dimRange">Overlay strength</label>
+          <output id="dimValue">25%</output>
+        </div>
+        <input id="dimRange" type="range" min="0" max="75" value="25">
+      </div>
+    </div>
+    <div class="section">
+      <h2 class="section-title">QUOTE</h2>
+      <div class="field">
+        <label for="quoteInput">Your excerpt</label>
+        <textarea id="quoteInput">“A sentence can hold an entire world.”</textarea>
+      </div>
+      <div class="two-col">
+        <div class="field">
+          <label for="quoteFont">Font family</label>
+          <select id="quoteFont">
+            <option value="serif">Serif</option>
+            <option value="sans">Sans serif</option>
+            <option value="georgia">Georgia</option>
+            <option value="times">Times New Roman</option>
+            <option value="arial">Arial</option>
+            <option value="figtree">Figtree</option>
+            <option value="gothic">Korean Gothic</option>
+            <option value="myeongjo">Korean Myeongjo</option>
+            <option value="noto">Noto Sans KR</option>
+            <option value="nanum">Nanum Myeongjo</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="quoteWeight">Font weight</label>
+          <select id="quoteWeight">
+            <option value="300">Light</option>
+            <option value="400" selected>Regular</option>
+            <option value="500">Medium</option>
+            <option value="600">Semibold</option>
+            <option value="700">Bold</option>
+            <option value="800">Extra bold</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <div class="range-line">
+          <label for="quoteSize">Font size</label>
+          <output id="quoteSizeValue">22 px</output>
+        </div>
+        <input id="quoteSize" type="range" min="12" max="52" value="22">
+      </div>
+      <div class="field">
+        <label>Text color</label>
+        <div class="color-row">
+          <input id="quoteColor" type="color" value="#ffffff">
+          <input id="quoteColorText" type="text" value="#ffffff" aria-label="Quote color hex">
+        </div>
+      </div>
+      <div class="field">
+        <label>Alignment</label>
+        <div class="segment align-group" data-target="text1Preview">
+          <button data-align="left" class="active" aria-label="Align left" title="Align left">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 6h16M4 10h10M4 14h16M4 18h10"/>
+            </svg>
+          </button>
+          <button data-align="center" aria-label="Align center" title="Align center">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 6h16M7 10h10M4 14h16M7 18h10"/>
+            </svg>
+          </button>
+          <button data-align="right" aria-label="Align right" title="Align right">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 6h16M10 10h10M4 14h16M10 18h10"/>
+            </svg>
+          </button>
+          <button data-align="justify" aria-label="Justify text" title="Justify text">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="section">
+      <h2 class="section-title">BOOK DETAILS</h2>
+      <div class="field">
+        <label for="titleInput">Book title</label>
+        <input id="titleInput" type="text" value="The Shape of Quiet">
+      </div>
+      <div class="two-col">
+        <div class="field">
+          <label for="titleFont">Title font</label>
+          <select id="titleFont">
+            <option value="sans">Sans serif</option>
+            <option value="serif">Serif</option>
+            <option value="georgia">Georgia</option>
+            <option value="times">Times New Roman</option>
+            <option value="arial">Arial</option>
+            <option value="figtree">Figtree</option>
+            <option value="gothic">Korean Gothic</option>
+            <option value="myeongjo">Korean Myeongjo</option>
+            <option value="noto">Noto Sans KR</option>
+            <option value="nanum">Nanum Myeongjo</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="titleWeight">Title weight</label>
+          <select id="titleWeight">
+            <option value="300">Light</option>
+            <option value="400">Regular</option>
+            <option value="500" selected>Medium</option>
+            <option value="600">Semibold</option>
+            <option value="700">Bold</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <div class="range-line">
+          <label for="titleSize">Title size</label>
+          <output id="titleSizeValue">18 px</output>
+        </div>
+        <input id="titleSize" type="range" min="10" max="36" value="18">
+      </div>
+      <div class="field">
+        <label>Title color</label>
+        <div class="color-row">
+          <input id="titleColor" type="color" value="#ffffff">
+          <input id="titleColorText" type="text" value="#ffffff" aria-label="Title color hex">
+        </div>
+      </div>
+      <div class="field">
+        <label for="authorInput">Author</label>
+        <input id="authorInput" type="text" value="A. Writer">
+      </div>
+      <div class="field">
+        <label for="chapterInput">Chapter</label>
+        <input id="chapterInput" type="text" value="Chapter 13">
+      </div>
+      <div class="two-col">
+        <div class="field">
+          <label for="detailsFont">Details font</label>
+          <select id="detailsFont">
+            <option value="sans">Sans serif</option>
+            <option value="serif">Serif</option>
+            <option value="georgia">Georgia</option>
+            <option value="times">Times New Roman</option>
+            <option value="arial">Arial</option>
+            <option value="figtree">Figtree</option>
+            <option value="gothic">Korean Gothic</option>
+            <option value="myeongjo">Korean Myeongjo</option>
+            <option value="noto">Noto Sans KR</option>
+            <option value="nanum">Nanum Myeongjo</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="detailsWeight">Details weight</label>
+          <select id="detailsWeight">
+            <option value="300" selected>Light</option>
+            <option value="400">Regular</option>
+            <option value="500">Medium</option>
+            <option value="600">Semibold</option>
+            <option value="700">Bold</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <div class="range-line">
+          <label for="detailsSize">Details size</label>
+          <output id="detailsSizeValue">14 px</output>
+        </div>
+        <input id="detailsSize" type="range" min="9" max="26" value="14">
+      </div>
+      <div class="field">
+        <label>Details color</label>
+        <div class="color-row">
+          <input id="detailsColor" type="color" value="#ffffff">
+          <input id="detailsColorText" type="text" value="#ffffff" aria-label="Details color hex">
+        </div>
+      </div>
+      <div class="field"><label>Book details alignment</label>
+        <div class="segment align-group" data-target="detailsGroup">
+          <button data-align="left" class="active" aria-label="Align left" title="Align left">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 6h16M4 10h10M4 14h16M4 18h10"/>
+            </svg>
+          </button>
+          <button data-align="center" aria-label="Align center" title="Align center">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 6h16M7 10h10M4 14h16M7 18h10"/>
+            </svg>
+          </button>
+          <button data-align="right" aria-label="Align right" title="Align right">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 6h16M10 10h10M4 14h16M10 18h10"/>
+            </svg>
+          </button>
+          <button data-align="justify" aria-label="Justify text" title="Justify text">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="section">
+      <h2 class="section-title">PUBLISHER</h2>
+      <div class="checkline">
+        <span>Show publisher at bottom</span>
+        <label class="switch">
+          <input id="publisherToggle" type="checkbox" checked>
+          <span>
+          </span>
+        </label>
+      </div>
+      <div class="field">
+        <label for="publisherInput">Publisher / source</label>
+        <input id="publisherInput" type="text" value="Quote Canvas · Your source">
+      </div>
+      <div class="field">
+        <div class="field">
+          <label for="publisherFont">Publisher font</label>
+          <select id="publisherFont">
+            <option value="sans">Sans serif</option>
+            <option value="serif">Serif</option>
+            <option value="georgia">Georgia</option>
+            <option value="times">Times New Roman</option>
+            <option value="arial">Arial</option>
+            <option value="figtree">Figtree</option>
+            <option value="gothic">Korean Gothic</option>
+            <option value="myeongjo">Korean Myeongjo</option>
+            <option value="noto">Noto Sans KR</option>
+            <option value="nanum">Nanum Myeongjo</option>
+          </select>
+        </div>
+        <div class="field">
+          <div class="range-line">
+            <label for="publisherSize">Font size</label>
+            <output id="publisherSizeValue">11 px</output>
+          </div>
+          <input id="publisherSize" type="range" min="7" max="24" value="11">
+        </div>
+      </div>
+      <div class="field">
+        <label>Publisher color</label>
+        <div class="color-row">
+          <input id="publisherColor" type="color" value="#ffffff">
+          <input id="publisherColorText" type="text" value="#ffffff" aria-label="Publisher color hex">
+        </div>
+      </div>
+    </div>
+    <div class="actions">
+      <button id="resetButton" class="secondary">Reset</button>
+      <button id="saveButton" class="primary">Save image ↓</button>
+    </div>
+    <p style="font-size:11px;color:var(--muted);margin:12px 2px 0">Export creates a square PNG. Custom fonts may depend on fonts installed or available in your browser.</p>
+  </aside>
+  <main class="workspace">
+    <div class="stage-top">
+      <span class="eyebrow">Your quote, your keepsake</span>
+      <span class="stage-status">
+        <span class="status-dot"></span>
+        <span>LIVE PREVIEW · 1:1</span>
+      </span>
+    </div>
+    <div class="preview-wrap">
+      <div id="preview" class="quote-preview" aria-label="Quote card preview">
+        <div id="darkOverlay" class="dark-overlay"></div>
+        <div id="mainCopy" class="main-copy">
+          <div id="text1Preview" class="preview-text text1">“A sentence can hold an entire world.”</div>
+          <div id="detailsGroup">
+            <div id="text2Preview" class="preview-text text2">The Shape of Quiet</div>
+            <div id="text3Preview" class="preview-text text3">A. Writer  ·  Chapter 13</div>
+          </div>
+        </div>
+        <div id="text4Preview" class="preview-text text4">Quote Canvas · Your source</div>
+      </div>
+    </div>
+    <div class="preview-caption">Made for the lines that stay with you</div>
+  </main>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const preview = $('preview');
+  const fontMap = {
+    serif:'"Libre Baskerville", "Times New Roman", serif',
+    sans:'"Nunito Sans", "Noto Sans KR", Arial, sans-serif',
+    georgia:'Georgia, serif',
+    times:'"Times New Roman", serif',
+    arial:'Arial, sans-serif',
+    figtree:'"Figtree", "Noto Sans KR", sans-serif',
+    gothic:'"Chiron GoRound TC", "Malgun Gothic", sans-serif',
+    myeongjo:'"Noto Serif KR", "Batang", serif',
+    noto:'"Noto Sans KR", "Malgun Gothic", sans-serif',
+    nanum:'"NanumMyeongjo", "Batang", serif'
+  };
+  const defaults = {
+    quoteInput:'“A sentence can hold an entire world.”',quoteFont:'serif',quoteWeight:'400',quoteSize:'22',quoteColor:'#ffffff',
+    titleInput:'The Shape of Quiet',titleFont:'sans',titleWeight:'500',titleSize:'18',titleColor:'#ffffff',
+    authorInput:'A. Writer',chapterInput:'Chapter 13',detailsFont:'sans',detailsWeight:'300',detailsSize:'14',detailsColor:'#ffffff',
+    publisherInput:'Quote Canvas · Your source',publisherFont:'sans',publisherSize:'11',publisherColor:'#ffffff',
+    dimToggle:false,dimRange:'25',publisherToggle:true
+  };
+  const fields = Object.keys(defaults);
+  function applyFont(el, key){el.style.fontFamily=fontMap[$(key).value]||fontMap.sans}
+  function applyColor(id){
+    const picker=$(id), text=$(id+'Text');
+    const sync=(value,fromText=false)=>{
+      if(/^#[0-9a-f]{6}$/i.test(value)){picker.value=value;text.value=value;render()}
+      else if(!fromText)text.value=picker.value;
+    };
+    picker.addEventListener('input',()=>sync(picker.value));
+    text.addEventListener('change',()=>sync(text.value,true));
+  }
+  ['quoteColor','titleColor','detailsColor','publisherColor'].forEach(applyColor);
+  function render(){
+    $('text1Preview').textContent=$('quoteInput').value;
+    $('text2Preview').textContent=$('titleInput').value;
+    const author=$('authorInput').value.trim();
+    const chapter=$('chapterInput').value.trim();
+    $('text3Preview').textContent=[author,chapter].filter(Boolean).join('  ·  ');
+    $('text4Preview').textContent=$('publisherInput').value;
+    const quote=$('text1Preview'),title=$('text2Preview'),details=$('text3Preview'),publisher=$('text4Preview');
+    applyFont(quote,'quoteFont');applyFont(title,'titleFont');applyFont(details,'detailsFont');applyFont(publisher,'publisherFont');
+    quote.style.fontSize=$('quoteSize').value+'px';quote.style.fontWeight=$('quoteWeight').value;quote.style.color=$('quoteColor').value;
+    title.style.fontSize=$('titleSize').value+'px';title.style.fontWeight=$('titleWeight').value;title.style.color=$('titleColor').value;
+    details.style.fontSize=$('detailsSize').value+'px';details.style.fontWeight=$('detailsWeight').value;details.style.color=$('detailsColor').value;
+    publisher.style.fontSize=$('publisherSize').value+'px';publisher.style.color=$('publisherColor').value;
+    publisher.style.display=$('publisherToggle').checked?'block':'none';
+    $('darkOverlay').style.opacity=$('dimToggle').checked?(Number($('dimRange').value)/100):0;
+    $('dimValue').textContent=$('dimRange').value+'%';
+    ['quoteSize','titleSize','detailsSize','publisherSize'].forEach(id=>$(id+'Value').textContent=$(id).value+' px');
+  }
+  fields.forEach(id=>{
+    const el=$(id); if(!el)return;
+    el.addEventListener('input',render);el.addEventListener('change',render);
+  });
+  document.querySelectorAll('.align-group button').forEach(button=>{
+    button.addEventListener('click',()=>{
+        const group=button.closest('.align-group');
+        group.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b===button));
+        const target=$(group.dataset.target);
+        target.style.textAlign=button.dataset.align;
+      });
+    });
+  document.querySelectorAll('.swatch').forEach(button=>button.addEventListener('click',()=>{
+    document.querySelectorAll('.swatch').forEach(b=>b.classList.toggle('active',b===button));
+    preview.style.backgroundImage=button.dataset.bg;preview.style.backgroundColor='';
+    preview.style.backgroundSize='cover';preview.style.backgroundPosition='center';
+    $('backgroundUpload').value='';
+  }));
+  $('backgroundUpload').addEventListener('change',event=>{
+    const file=event.target.files&&event.target.files[0];if(!file)return;
+    const reader=new FileReader();
+    reader.onload=()=>{preview.style.backgroundImage=`url("${reader.result}")`;preview.style.backgroundSize='cover';preview.style.backgroundPosition='center';document.querySelectorAll('.swatch').forEach(b=>b.classList.remove('active'))};
+    reader.readAsDataURL(file);
+  });
+  $('themeToggle').addEventListener('click',()=>{document.body.classList.toggle('light');$('themeToggle').textContent=document.body.classList.contains('light')?'☾':'☼'});
+  $('resetButton').addEventListener('click',()=>{
+    for(const [id,value] of Object.entries(defaults)){const el=$(id);if(!el)continue;if(el.type==='checkbox')el.checked=value;else el.value=value}
+    ['quoteColor','titleColor','detailsColor','publisherColor'].forEach(id=>$(id+'Text').value=$(id).value);
+    document.querySelectorAll('.align-group').forEach(group=>{
+      const align=group.dataset.target==='text1Preview'?'left':'left';
+      group.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.align===align));
+      $(group.dataset.target).style.textAlign=align;
+    });
+    document.querySelectorAll('.swatch').forEach((b,i)=>b.classList.toggle('active',i===0));
+    preview.style.backgroundImage=document.querySelector('.swatch').dataset.bg;
+    render();
+  });
+  $('saveButton').addEventListener('click',async()=>{
+    const button=$('saveButton'),old=button.textContent;button.disabled=true;button.textContent='Preparing…';
+    try{
+      if(!window.html2canvas)throw new Error('The image export library could not load. Check your internet connection and try again.');
+      const canvas=await html2canvas(preview,{backgroundColor:null,scale:2,useCORS:true,allowTaint:false,logging:false});
+      const link=document.createElement('a');link.download='quote-card.png';link.href=canvas.toDataURL('image/png');link.click();
+      button.textContent='Saved ✓';
+    }catch(error){alert('Could not export the image. '+error.message);button.textContent=old}
+    finally{setTimeout(()=>{button.disabled=false;button.textContent=old},1300)}
+  });
+  render();
+})();
+</script>
+</body>
+</html>
